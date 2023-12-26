@@ -14,7 +14,7 @@ class CustomerController extends Controller
     public function Index(){
         $village=Village::all();
         $laid= Laid::all();
-        $customer = Customer::with('village', 'laid')->OrderBy('created_at','DESC')->get();
+        $customer = Customer::with('village', 'laid')->OrderBy('laids_id','ASC')->get();
         return view('pages.customer',compact('customer','village','laid'));
     }
     public function CustomarStore(Request $request){
@@ -92,7 +92,7 @@ class CustomerController extends Controller
     }
     //halkhata
     public function HalkhataView(){
-        $customer = Customer::with('village', 'laid')->OrderBy('created_at','ASC')->get();
+        $customer = Customer::with('village', 'laid')->OrderBy('laids_id','ASC')->OrderBy('created_at','ASC')->get();
         return view('pages.halkhata',compact('customer'));
     }
     public function HalkhataStore(Request $request){
@@ -167,7 +167,10 @@ class CustomerController extends Controller
 
     }
      public function GenaratePdf(){
-        $data = Customer::with('village', 'laid')->get();
+        $data = Customer::with('village', 'laid')
+                  ->OrderBy('laids_id','ASC')
+                  ->OrderBy('created_at','ASC')
+                  ->get();
         $fileName = 'Halkhata_document.pdf';
         $mpdf = new \Mpdf\Mpdf([
             'format'                     => 'A4',
