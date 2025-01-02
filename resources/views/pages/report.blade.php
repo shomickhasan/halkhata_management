@@ -29,11 +29,11 @@
                 <th>নং</th>
                 <th>নাম</th>
                 <th>সম্পর্ক</th>
-                <th>গ্রাম</th>
+               {{-- <th>গ্রাম</th>--}}
                 <th>পাড়া/মহল্লা</th>
-                <th>মোট বাকি</th>
-                <th>হালখাতা</th>
-                <th>জের</th>
+                <th style="width: 100px">মোট বাকি</th>
+                <th style="width: 100px">হালখাতা</th>
+                <th style="width: 100px" >জের</th>
             </tr>
         </thead>
         <tbody>
@@ -41,7 +41,7 @@
             @foreach ($data as $customer )
                 <tr>
                     <td >
-                        @if($customer->status ==0)
+                        @if($customer->status ==0 && $customer->privious_total_due !=0)
                             <mark>{{$sl++}}</mark>
                         @else
                             {{$sl++}}
@@ -50,7 +50,7 @@
                     </td>
                     <td>{{$customer->customer_name}}</td>
                     <td>{{$customer->customer_relations}}</td>
-                    <td>{{$customer->village->village_name}}</td>
+                   {{-- <td>{{$customer->village->village_name}}</td>--}}
                     <td>{{$customer->laid->laid_name}}</td>
                     <td>{{$customer->privious_total_due}}</td>
                     <td>{{$customer->payment}}</td>

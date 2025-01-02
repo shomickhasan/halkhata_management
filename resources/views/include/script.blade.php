@@ -3,6 +3,8 @@
 <!-- jQuery UI 1.11.4 -->
 <script src="{{asset('plugins/jquery-ui/jquery-ui.min.js')}}"></script>
 <!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
+<!-- After updating to version 3.6.2 -->
+
 <script>
   $.widget.bridge('uibutton', $.ui.button)
 </script>
@@ -39,6 +41,8 @@
 <!-- Data Table -->
 <script src="{{asset('plugins/datatables/jquery.dataTables.min.js')}}"></script>
 <script src="{{asset('dist/js/datatable.js')}}"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <script>
     //swa
 $(document).on("click", "#delete", function(e) {
@@ -87,3 +91,6 @@ $(document).on("click", "#delete", function(e) {
     }
     @endif
 </script>
+@stack('script')
+
+

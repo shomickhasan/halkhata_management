@@ -1,4 +1,7 @@
 //jquery Data table
 $(function () {
-    $("#datatableid").DataTable();
+    $("#datatableid").DataTable({
+        paging: false
+    });
 });
+
