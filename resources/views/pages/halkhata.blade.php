@@ -107,32 +107,62 @@
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-12">
                                 <div class="form-group">
                                     <label for="exampleInputName">মোট বাকি</label>
-                                    <input name="payment"  type="text" value="{{$customer->privious_total_due}}"
-                                        class=" text-bold form-control @error('payment') is-invalid @enderror" id="exampleInputName"
-                                        placeholder="Enter Name Bangla" disabled>
+{{--                                    <input name="payment"  type="text" value="{{$customer->privious_total_due}}"--}}
+{{--                                        class=" text-bold form-control @error('payment') is-invalid @enderror" id="exampleInputName"--}}
+{{--                                        placeholder="Enter Name Bangla" disabled>--}}
+                                    <input type="text"
+                                           class="form-control text-bold total_due"
+                                           value="{{$customer->privious_total_due}}"
+                                           readonly>
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <form action="{{route('customer.HalkhataStore')}}" method="POST">
-                                    @csrf
-                                    <div class="form-group">
-                                        <input type="hidden" name="id" value="{{$customer->id}}">
-                                        <label for="exampleInputName">হালখাতা</label>
-                                        <input name="payment"  type="number"
-                                            class=" text-bold form-control @error('payment') is-invalid @enderror" id="exampleInputName"
-                                            placeholder="Enter amount">
-                                        @error('payment')
-                                            <div class="invalid-feedback">
-                                                {{ $message }}
-                                            </div>
-                                        @enderror
-                                    </div>
-                                    <button type="submit" class="btn  btn-primary">Save</button>
-                                </form>
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="exampleInputName">জমা</label>
+                                    <input type="number"
+                                           class="form-control text-bold submit_amount"
+                                           placeholder="জমা">
+                                </div>
                             </div>
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="exampleInputName">ফেরত পাবে </label>
+                                    <input type="number"
+                                           class="form-control text-bold return_amount"
+                                           value="0"
+                                           readonly>
+                                </div>
+                            </div>
+                            <form action="{{route('customer.HalkhataStore')}}" method="POST">
+                                <div class="col-md-12">
+                                        @csrf
+                                        <div class="form-group">
+                                            <input type="hidden" name="id" value="{{$customer->id}}">
+                                            <label for="exampleInputName">হালখাতা</label>
+                                            <input name="payment"  type="number"
+                                                class=" text-bold form-control @error('payment') is-invalid @enderror" id="exampleInputName"
+                                                placeholder="Enter amount" value="{{$customer->privious_total_due}}">
+                                            @error('payment')
+                                                <div class="invalid-feedback">
+                                                    {{ $message }}
+                                                </div>
+                                            @enderror
+                                        </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label for="exampleInputName"> মোবাইল নম্বার </label>
+                                        <input type="text"
+                                               class="form-control text-bold mobile_number"
+                                               placeholder="মোবাইল নম্বার " name="mobile_number">
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn  btn-primary">Save</button>
+
+                            </form>
                         </div>
 
                     </div>
@@ -165,4 +195,25 @@
 
 
 @endsection
+@push('script')
+    <script>
+        $(document).on('keyup change', '.submit_amount', function () {
+
+            let modal = $(this).closest('.modal');
+
+            let totalDue = parseFloat(modal.find('.total_due').val()) || 0;
+            let submitAmount = parseFloat($(this).val()) || 0;
+
+            let returnAmount = submitAmount - totalDue;
+
+            if (returnAmount < 0) {
+                returnAmount = 0;
+            }
+
+            modal.find('.return_amount').val(returnAmount);
+        });
+    </script>
+
+
+@endpush
 

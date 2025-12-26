@@ -7,6 +7,7 @@ use App\Models\Customer;
 use App\Models\Village;
 use App\Models\Laid;
 use Illuminate\Support\Str;
+use mysql_xdevapi\Exception;
 use PDF;
 
 class CustomerController extends Controller
@@ -53,27 +54,36 @@ class CustomerController extends Controller
     }
     public function CustomarEdit(Request $request){
 
-        $customer= Customer::find($request->id);
-        $customer->customer_name= $request->bangla_name;
-        $customer->customer_english_name= $request->english_name;
-        $customer->slug= Str::slug($request->english_name);
-        $customer->customer_relations= $request->customer_relations;
-        $customer->village_id= $request->village_id;
-        $customer->laids_id= $request->laid_id;
-        $customer->privious_total_due= $request->total_due;
-        $customer->update();
-        if ($customer) {
-            $notification = array(
-                'message' => 'নতুন কাস্টমার আপডেট হযেছে',
-                'alert-type' => 'success',
-            ); // returns Notification,
-        } else {
-            $notification = array(
-                'message' => 'নতুন কাস্টমার আপডেট হয়নাই',
-                'alert-type' => 'success',
-            ); // returns Notification,
+        try{
+
+            $customer= Customer::find($request->id);
+            $customer->customer_name= $request->bangla_name;
+            $customer->customer_english_name= $request->english_name;
+            $customer->slug= Str::slug($request->english_name);
+            $customer->customer_relations= $request->customer_relations;
+            $customer->village_id= $request->village_id;
+            $customer->laids_id= $request->laid_id;
+            $customer->privious_total_due= $request->total_due;
+            $customer->update();
+            if ($customer) {
+                $notification = array(
+                    'message' => 'নতুন কাস্টমার আপডেট হযেছে',
+                    'alert-type' => 'success',
+                ); // returns Notification,
+            } else {
+                $notification = array(
+                    'message' => 'নতুন কাস্টমার আপডেট হয়নাই',
+                    'alert-type' => 'success',
+                ); // returns Notification,
+            }
+            return redirect()->back()->with($notification);
+
         }
-        return redirect()->back()->with($notification);
+        catch (Exception $e){
+            return $e->getMessage();
+        }
+
+
     }
 
     public function CustomarDelete($id){
@@ -104,12 +114,14 @@ class CustomerController extends Controller
     public function HalkhataStore(Request $request){
         $request->validate([
             'payment' => 'required',
+            'mobile_number' => 'nullable',
         ]);
         $halkhata = Customer::find($request->id);
         $halkhata->payment = $request->payment;
         $halkhata->status=1;
         $currentDue= $halkhata->privious_total_due - $request->payment;
         $halkhata->current_due =  $currentDue;
+        $halkhata->mobile_number =  $request->mobile_number;
         $halkhata->update();
         if ($halkhata) {
             $notification = array(
@@ -173,11 +185,13 @@ class CustomerController extends Controller
 
     }
      public function GenaratePdf(){
-        $data = Customer::with('village', 'laid')
-                  ->OrderBy('laids_id','ASC')
-                  ->OrderBy('created_at','ASC')
-                  ->get();
-        $fileName = 'Halkhata_document.pdf';
+         $data = Customer::with('village', 'laid')
+             ->orderBy('laids_id', 'ASC')
+             ->orderBy('created_at', 'ASC')
+             //->where('status', 0)
+             //->where('privious_total_due', '>', 0)
+             ->get();
+         $fileName = 'Halkhata_document.pdf';
         $mpdf = new \Mpdf\Mpdf([
             'format'                     => 'A4',
             'default_font_size'          => '16',
@@ -196,6 +210,47 @@ class CustomerController extends Controller
 
 
     }
+
+
+    // public function GenaratePdf()
+    // {
+    //     try {
+    //         $data = Customer::with('village', 'laid')
+    //             ->orderBy('laids_id', 'ASC')
+    //             ->orderBy('created_at', 'ASC')
+    //             ->get();
+
+    //         $fileName = 'Halkhata_document.pdf';
+
+    //         $mpdf = new \Mpdf\Mpdf([
+    //             'format' => 'A4',
+    //             'default_font_size' => '16',
+    //             'default_font' => 'nikosh',
+    //             'margin_left' => 10,
+    //             'margin_right' => 10,
+    //             'margin_top' => 10,
+    //             'margin_bottom' => 10,
+    //         ]);
+
+    //         $mpdf->fontdata = array_merge($mpdf->fontdata, [
+    //             'nikosh' => [
+    //                 'R' => storage_path('fonts/Nikosh.ttf'),        // Regular font
+
+    //             ],
+    //         ]);
+
+    //         $mpdf->SetFont('nikosh'); // Set default font to Nikosh
+
+    //         $html = \View::make('pages.report', ['data' => $data])->render();
+    //         $mpdf->WriteHTML($html);
+    //         $mpdf->Output($fileName, 'I');
+    //     } catch (\Exception $e) {
+    //         return response()->json(['error' => $e->getMessage()], 500);
+    //     }
+    // }
+
+
+
 
 
 }

@@ -34,6 +34,7 @@
                 <th style="width: 100px">মোট বাকি</th>
                 <th style="width: 100px">হালখাতা</th>
                 <th style="width: 100px" >জের</th>
+            <th style="width: 200px" >মোবাইল</th>
             </tr>
         </thead>
         <tbody>
@@ -43,6 +44,7 @@
                     <td >
                         @if($customer->status ==0 && $customer->privious_total_due !=0)
                             <mark>{{$sl++}}</mark>
+
                         @else
                             {{$sl++}}
                         @endif
@@ -53,8 +55,9 @@
                    {{-- <td>{{$customer->village->village_name}}</td>--}}
                     <td>{{$customer->laid->laid_name}}</td>
                     <td>{{$customer->privious_total_due}}</td>
-                    <td>{{$customer->payment}}</td>
-                    <td>{{$customer->current_due}}</td>
+                    <td>{{$customer->payment !=0 ? $customer->payment : '' }}</td>
+                    <td>{{$customer->current_due !=0 ? $customer->current_due : '' }}</td>
+                    <td></td>
 
             @endforeach
                 </tr>

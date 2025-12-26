@@ -19,11 +19,24 @@
     </div>
   <!-- /.content-header -->
   @php
+      use App\Models\Customer;
+      use App\Models\Laid;
 
-    $totalCustomer =App\Models\Customer::where('privious_total_due', '>', 0)->count();
-    $totalDue =App\Models\Customer::sum('privious_total_due');
-    $totalAttend = App\Models\Customer::where('status',1)->count();
-    $totalPayment =App\Models\Customer::sum('payment');
+      $totalCustomer =App\Models\Customer::where('privious_total_due', '>', 0)->count();
+      $totalDue =App\Models\Customer::sum('privious_total_due');
+      $totalAttend = App\Models\Customer::where('status',1)->count();
+      $totalPayment =App\Models\Customer::sum('payment');
+
+
+
+      $laidsData = Customer::join('laids', 'laids.id', '=', 'customers.laids_id')
+      ->select(
+          'laids.laid_name',
+          \DB::raw('SUM(privious_total_due) as total_due'),
+          \DB::raw('SUM(payment) as payment')
+      )
+      ->groupBy('laids.laid_name')
+      ->get();
 
 
   @endphp
@@ -94,7 +107,21 @@
         </div>
         <!-- ./col -->
       </div>
-      <!-- /.row -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card card-danger">
+                    <div class="card-header">
+                        <h3 class="card-title">Laid অনুযায়ী Due vs Payment</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="duePaymentChart" style="min-height: 250px; height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- /.row -->
       <div class="row">
         <div class="col-md-12">
             <div class="card card-danger">
@@ -117,13 +144,72 @@
               </div>
         </div>
       </div>
-    </div><!-- /.container-fluid -->
+    </div>
   </section>
 @endsection
 @push('script')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-    document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
+            var laids = @json($laidsData);
+
+            var labels = laids.map(item => item.laid_name);
+            var totalDueData = laids.map(item => item.total_due);
+            var paymentData = laids.map(item => item.payment);
+
+            var ctx = document.getElementById('duePaymentChart').getContext('2d');
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Total Due',
+                            data: totalDueData,
+                            backgroundColor: '#DC3545'
+                        },
+                        {
+                            label: 'Payment',
+                            data: paymentData,
+                            backgroundColor: '#28A745'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'top' },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    let datasetLabel = context.dataset.label;
+                                    let value = context.parsed.y;
+                                    let index = context.dataIndex;
+                                    let totalDue = totalDueData[index];
+
+                                    let percent = 0;
+                                    if(datasetLabel === 'Payment' && totalDue > 0){
+                                        percent = Math.round((value / totalDue) * 100);
+                                    }
+                                    return datasetLabel + ': ' + value + (percent ? ' (' + percent + '%)' : '');
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { title: { display: true, text: 'Laid Name' } },
+                        y: { beginAtZero: true, title: { display: true, text: 'Amount' } }
+                    }
+                }
+            });
+        });
+
+
+
+        document.addEventListener('DOMContentLoaded', function () {
         var ctx = document.getElementById('attendanceChart').getContext('2d');
         var  totalCustomers = @json($totalCustomer);
         var attendedCustomers = @json( $totalAttend);
